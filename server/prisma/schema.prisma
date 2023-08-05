@@ -1,0 +1,224 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// #region User 
+model Profile {
+  profileId Int      @id @default(autoincrement())
+  firstName String   @db.VarChar(35)
+  lastName  String   @db.VarChar(35)
+  student   Student?
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Student {
+  profileId      Int            @id @default(autoincrement())
+  degreeCourseId Int
+  profile        Profile        @relation(fields: [profileId], references: [profileId])
+  degreeCourses  DegreeCourse[]
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// #endregion
+
+// #region University catalog
+model School {
+  schoolId     Int           @id @default(autoincrement())
+  code         String        @unique @db.VarChar(35)
+  name         String        @db.VarChar(255)
+  institutions Institution[]
+  examPeriods  ExamPeriod[]
+
+  isActive Boolean @default(true)
+}
+
+model SchoolType {
+  schoolTypeId Int    @id @default(autoincrement())
+  code         String @unique @db.VarChar(35)
+  name         String @db.VarChar(128)
+
+  isActive Boolean @default(true)
+}
+
+model Institution {
+  institutionId Int    @id @default(autoincrement())
+  code          String @unique @db.VarChar(255)
+  name          String @db.VarChar(255)
+  schoolId      Int
+  school        School @relation(fields: [schoolId], references: [schoolId], onDelete: Cascade)
+
+  isActive Boolean @default(true)
+}
+
+model InstitutionType {
+  institutionTypeId Int    @id @default(autoincrement())
+  code              String @db.VarChar(35)
+  name              String @db.VarChar(128)
+
+  isActive Boolean @default(true)
+}
+
+model Degree {
+  degreeId      Int          @id @default(autoincrement())
+  resolution    String       @unique @db.VarChar(64)
+  degreeLevelId Int
+  examPeriods   ExamPeriod[]
+  subjects      Subject[]
+  degreeLevel   DegreeLevel  @relation(fields: [degreeLevelId], references: [degreeLevelId])
+
+  isActive Boolean @default(true)
+}
+
+model DegreeLevel {
+  degreeLevelId Int      @id @default(autoincrement())
+  code          String   @db.VarChar(35)
+  name          String   @db.VarChar(128)
+  degrees       Degree[]
+
+  isActive Boolean @default(true)
+}
+
+model Subject {
+  subjectId           Int              @id @default(autoincrement())
+  name                String           @db.VarChar(128)
+  degreeId            Int
+  degree              Degree           @relation(fields: [degreeId], references: [degreeId])
+  subjectProgress     SubjectProgress?
+  finalExamDates      FinalExamDate[]
+  correlativeSubjects Subject[]        @relation("correlatives")
+  requiredBySubjects  Subject[]        @relation("correlatives")
+  subjectPlans        SubjectPlan[]
+
+  isActive Boolean @default(true)
+}
+
+model SubjectState {
+  subjectStateId  Int               @id @default(autoincrement())
+  code            String            @unique @db.VarChar(35)
+  name            String            @db.VarChar(128)
+  subjectProgress SubjectProgress[]
+}
+
+// #endregion
+
+model DegreeCourse {
+  degreeCourseId      Int               @id @default(autoincrement())
+  studentId           Int
+  degreeId            Int
+  degreeCourseStateId Int
+  student             Student           @relation(fields: [studentId], references: [profileId])
+  subjectProgress     SubjectProgress[]
+  degreeCourseState   DegreeCourseState @relation(fields: [degreeCourseStateId], references: [degreeCourseStateId])
+  graduationPlan      GraduationPlan?
+
+  isActive Boolean @default(true)
+
+  @@unique([studentId, degreeId])
+}
+
+model DegreeCourseState {
+  degreeCourseStateId Int            @id @default(autoincrement())
+  code                String         @unique @db.VarChar(35)
+  name                String         @db.VarChar(128)
+  degreeCourses       DegreeCourse[]
+}
+
+model SubjectProgress {
+  subjectProgressId Int       @id @default(autoincrement())
+  expirationDate    DateTime?
+  subjectId         Int       @unique
+  degreeCourseId    Int
+  subjectStateId    Int
+
+  subject      Subject      @relation(fields: [subjectId], references: [subjectId])
+  degreeCourse DegreeCourse @relation(fields: [degreeCourseId], references: [degreeCourseId])
+  subjectState SubjectState @relation(fields: [subjectStateId], references: [subjectStateId])
+}
+
+model SubjectGrade {
+  subjectGradeId          Int            @id @default(autoincrement())
+  grade                   Decimal
+  date                    DateTime
+  approvedInAnotherSchool Boolean        @default(false)
+  finalExamDateId         Int?
+  finalExamDate           FinalExamDate? @relation(fields: [finalExamDateId], references: [finalExamDateId])
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model ExamPeriod {
+  examPeriodId      Int      @id @default(autoincrement())
+  name              String   @db.VarChar(128)
+  startDate         DateTime
+  endDate           DateTime
+  schoolId          Int
+  degreeId          Int
+  examPeriodStateId Int
+
+  finalExamDates  FinalExamDate[]
+  degree          Degree?         @relation(fields: [degreeId], references: [degreeId])
+  school          School          @relation(fields: [schoolId], references: [schoolId])
+  subjectPlans    SubjectPlan[]
+  examPeriodState ExamPeriodState @relation(fields: [examPeriodStateId], references: [examPeriodStateId])
+
+  isActive Boolean @default(true)
+}
+
+model ExamPeriodState {
+  examPeriodStateId Int    @id @default(autoincrement())
+  code              String @unique @db.VarChar(35)
+  name              String
+
+  examPeriods ExamPeriod[]
+}
+
+model FinalExamDate {
+  finalExamDateId Int      @id @default(autoincrement())
+  date            DateTime
+  examPeriodId    Int
+  subjectId       Int
+
+  examPeriod    ExamPeriod     @relation(fields: [examPeriodId], references: [examPeriodId])
+  subject       Subject        @relation(fields: [subjectId], references: [subjectId])
+  subjectPlans  SubjectPlan[]
+  subjectGrades SubjectGrade[]
+
+  isActive Boolean @default(true)
+}
+
+model GraduationPlan {
+  graduationPlanId Int @id @default(autoincrement())
+  degreeCourseId   Int @unique
+
+  subjectPlans SubjectPlan[]
+  degreeCourse DegreeCourse  @relation(fields: [degreeCourseId], references: [degreeCourseId])
+  
+  isActive Boolean @default(true)
+}
+
+model SubjectPlan {
+  subjectPlanId    Int  @id @default(autoincrement())
+  subjectId        Int
+  graduationPlanId Int
+  examPeriodId     Int
+  finalExamDateId  Int?
+
+  finalExamDate  FinalExamDate? @relation(fields: [finalExamDateId], references: [finalExamDateId])
+  examPeriod     ExamPeriod     @relation(fields: [examPeriodId], references: [examPeriodId])
+  graduationPlan GraduationPlan @relation(fields: [graduationPlanId], references: [graduationPlanId])
+  subject        Subject        @relation(fields: [subjectId], references: [subjectId])
+
+  @@unique([graduationPlanId, subjectId, examPeriodId])
+}
