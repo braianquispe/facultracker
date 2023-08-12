@@ -32,6 +32,11 @@ module.exports = {
         project: [
           './server/tsconfig.json'
         ]
+      },
+      node: {
+        project: [
+          './server/tsconfig.json'
+        ]
       }
     },
   }
