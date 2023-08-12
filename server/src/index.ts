@@ -11,7 +11,7 @@ function bootstrap() {
   const app = express();
   app.use(express.json());
 
-  app.use('/api/v1/', routes);
+  app.use('/api/v1', routes());
   app.use(handleError);
 
   prisma.$connect().then(() => {
