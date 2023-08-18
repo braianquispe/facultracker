@@ -1,2 +1,2 @@
-// eslint-disable-next-line import/prefer-default-export
 export { default as server } from './server';
+export { default as firebase } from './firebase';

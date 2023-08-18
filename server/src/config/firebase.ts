@@ -1,0 +1,5 @@
+export default {
+  PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY,
+  PROJECT_ID: process.env.FIREBASE_PROJECT_ID,
+  CLIENT_EMAIL: process.env.FIREBASE_CLIENT_EMAIL,
+};
