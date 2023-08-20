@@ -14,7 +14,7 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module',
-    project: ['./server/tsconfig.json'],
+    project: ['./server/tsconfig.json', './client/tsconfig.json'],
   },
   plugins: ['@typescript-eslint', 'import'],
   rules: {
@@ -30,7 +30,8 @@ module.exports = {
     'import/resolver': {
       typescript: {
         project: [
-          './server/tsconfig.json'
+          './server/tsconfig.json',
+          './client/tsconfig.json',
         ]
       },
       node: {
