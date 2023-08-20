@@ -10,6 +10,7 @@ datasource db {
 // #region User 
 model Profile {
   profileId Int      @id @default(autoincrement())
+  userId    String?  @unique @db.VarChar(128)
   firstName String   @db.VarChar(35)
   lastName  String   @db.VarChar(35)
   student   Student?
