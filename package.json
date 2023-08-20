@@ -20,7 +20,8 @@
   },
   "homepage": "https://github.com/cannyon/facultracker#readme",
   "workspaces": [
-    "server"
+    "server",
+    "client"
   ],
   "devDependencies": {
     "@commitlint/cli": "^17.6.7",
